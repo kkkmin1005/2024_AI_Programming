@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Detection - Movie Analysis</title>
+    <style>
+        /* 전체 페이지 스타일 */
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc; /* 연한 파란색 배경 */
+            color: #333;
+        }
+
+        /* 헤더 */
+        header {
+            background-color: #004a99;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 전체 컨테이너 */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        /* 카드 섹션 */
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+            margin: 10px 0;
+            padding: 20px;
+            text-align: left;
+        }
+
+        .card h2 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #004a99; /* 강조색 */
+        }
+
+        /* 영화 선택 슬라이더 */
+        .slider-container {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px 0;
+            gap: 10px;
+            scrollbar-width: none; /* 스크롤바 숨김 */
+        }
+
+        .slider-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .movie-card {
+            background: #e6efff;
+            border-radius: 8px;
+            text-align: center;
+            width: 150px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .movie-card:hover, .movie-card.selected {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .movie-card img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .movie-card p {
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* 웹캠 스타일 */
+        .webcam {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        #video-feed {
+            border-radius: 8px;
+            width: 100%;
+            max-width: 640px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 버튼 */
+        button {
+            background-color: #004a99;
+            color: white;
+            font-size: 1rem;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #003366;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        Emotion Detection - Movie Analysis
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <div class="container">
+        <!-- 영화 선택 카드 -->
+        <div class="card">
+            <h2>🎬 Select a Movie</h2>
+            <div class="slider-container" id="slider">
+                <div class="movie-card" onclick="selectMovie(this)" data-movie="Movie 1">
+                    <img src="https://via.placeholder.com/150x200?text=Movie+1" alt="Movie 1">
+                    <p>Movie 1</p>
+                </div>
+                <div class="movie-card" onclick="selectMovie(this)" data-movie="Movie 2">
+                    <img src="https://via.placeholder.com/150x200?text=Movie+2" alt="Movie 2">
+                    <p>Movie 2</p>
+                </div>
+                <div class="movie-card" onclick="selectMovie(this)" data-movie="Movie 3">
+                    <img src="https://via.placeholder.com/150x200?text=Movie+3" alt="Movie 3">
+                    <p>Movie 3</p>
+                </div>
+                <div class="movie-card" onclick="selectMovie(this)" data-movie="Movie 4">
+                    <img src="https://via.placeholder.com/150x200?text=Movie+4" alt="Movie 4">
+                    <p>Movie 4</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 웹캠 카드 -->
+        <div class="card webcam">
+            <h2>📷 Live Webcam</h2>
+            <img id="video-feed" src="{{ url_for('video_feed') }}" alt="Webcam Feed">
+        </div>
+
+    <!-- 감정 변화 로그 -->
+    <div class="card log-container">
+        <h2>📊 Emotion Change Log</h2>
+        <ul id="emotion-log-list"></ul>
+    </div>
+
+    <style>
+        /* 감정 변화 로그 스타일 */
+        .log-container {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            text-align: left;
+            max-height: 200px; /* 고정된 높이 */
+            overflow-y: auto; /* 스크롤이 가능하도록 설정 */
+        }
+
+        .log-container h2 {
+            font-size: 1.2rem;
+            color: #004a99;
+            margin-bottom: 10px;
+        }
+
+        #emotion-log-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #emotion-log-list li {
+            background: #ffffff;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            padding: 8px;
+            font-size: 0.9rem;
+            color: #555;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+
+
+        <!-- 영화 종료 버튼 -->
+        <button id="end-movie">End Movie and Calculate Rating</button>
+    </div>
+
+    <script>
+        const emotionLogList = document.getElementById('emotion-log-list');
+        let emotionLog = []; // 감정 변화 기록
+        let totalFrames = 0; // 총 프레임 수
+        let neutralFrames = 0; // 중립 감정 프레임 수
+        let currentEmotion = 'neutral'; // 초기 감정 상태
+        const movieStartTime = new Date(); // 영화 선택 시 시간 기록
+    
+        // 감정 데이터 가져오기
+        function fetchEmotionData() {
+            fetch('/current_emotion')
+                .then(response => response.json())
+                .then(data => {
+                    const detectedEmotion = data.emotion;
+    
+                    if (detectedEmotion !== currentEmotion) {
+                        // 감정이 변경되었을 때 로그 추가
+                        const timestamp = new Date().toLocaleTimeString();
+                        emotionLog.push({
+                            timestamp: timestamp,
+                            from: currentEmotion,
+                            to: detectedEmotion
+                        });
+    
+                        const logItem = document.createElement('li');
+                        logItem.textContent = `${timestamp}: ${currentEmotion} → ${detectedEmotion}`;
+                        emotionLogList.appendChild(logItem);
+    
+                        currentEmotion = detectedEmotion;
+                    }
+    
+                    if (detectedEmotion === 'neutral') {
+                        neutralFrames++;
+                    }
+                    totalFrames++;
+                })
+                .catch(error => {
+                    console.error('Error fetching emotion data:', error);
+                });
+        }
+    
+        // 1초마다 감정 데이터 가져오기
+        setInterval(fetchEmotionData, 1000);
+    
+        // 영화 종료 버튼 클릭
+        document.getElementById('end-movie').addEventListener('click', () => {
+            const movieEndTime = new Date(); // 영화 종료 시간 기록
+            const totalTime = (movieEndTime - movieStartTime) / 1000; // 총 시간(초)
+    
+            const neutralPercentage = neutralFrames / totalFrames; // 중립 비율
+            const rating = (10 - (10 * neutralPercentage)).toFixed(1); // 평점 계산
+    
+            console.log(`Total Time: ${totalTime}s`);
+            console.log(`Neutral Frames: ${neutralFrames}, Total Frames: ${totalFrames}`);
+            console.log(`Neutral Percentage: ${neutralPercentage}`);
+    
+            fetch('/end_movie', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    emotion_log: emotionLog,
+                    rating: rating
+                })
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url; // 리뷰 페이지로 이동
+                }
+            })
+            .catch(error => {
+                console.error('Error sending movie data:', error);
+            });
+        });
+    </script>
+    
+    
+    
+</body>
+</html>
